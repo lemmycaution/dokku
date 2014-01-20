@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
-
-case "$1" in
-  help)
-    cat
-    ;;
-esac
-
+pluginhook haproxy-pre-reload $APP
+sudo service haproxy reload
