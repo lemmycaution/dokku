@@ -3,7 +3,7 @@ set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 
 sudo apt-get install -y build-essential libssl-dev libpopt-dev git libpcre3-dev
 
-[[ ! -d "$HOME/haproxy" ]] && git clone http://git.1wt.eu/git/haproxy.git/ "$HOME/haproxy"
+[[ ! -d "$HOME/haproxy" ]] && git clone http://master.formilux.org/git/people/willy/haproxy.git "$HOME/haproxy"
 cd "$HOME/haproxy"
 make TARGET=linux2628 CPU=native USE_PCRE=1 USE_OPENSSL=1 USE_ZLIB=1 USE_STATIC_PCRE=1
 sudo make install
