@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 
-sudo apt-get install -y build-essential libssl-dev libpopt-dev git libpcre3-dev
+sudo apt-get install -y build-essential libssl-dev libpopt-dev git libpcre3-dev ruby1.9.1-dev rubygems
+
+update-alternatives --set ruby /usr/bin/ruby1.9.1
+update-alternatives --set gem /usr/bin/gem1.9.1
+gem install bundler
 
 [[ ! -d "$HOME/haproxy" ]] && git clone http://master.formilux.org/git/people/willy/haproxy.git "$HOME/haproxy"
 cd "$HOME/haproxy"
