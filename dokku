@@ -58,9 +58,10 @@ case "$1" in
     pluginhook pre-deploy $APP
 
     # kill the app when running
+    # UPDATE: using stop instead of kill for graceful shutdowns
     if [[ -f "$DOKKU_ROOT/$APP/CONTAINER" ]]; then
       oldid=$(< "$DOKKU_ROOT/$APP/CONTAINER")
-      docker kill $oldid > /dev/null 2>&1 || true
+      docker stop $oldid > /dev/null 2>&1 || true
     fi
 
     # start the app

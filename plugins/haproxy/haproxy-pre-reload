@@ -3,18 +3,17 @@
 require 'yaml'
 
 dokku_root = (`echo $DOKKU_ROOT`).gsub(/\n/,"")
-
 app, port, addr, vhost, subdomain, hostname, acl = ARGV
-
 config = `cat /etc/haproxy/haproxy.cfg`
-
 ps_file = "#{dokku_root}/#{app}/PS"
+frontend_regex = /\n^.*use_backend b_#{app}.*\}$/
+backend_regex = /^backend b_#{app}\n.*\#backend b_#{app}\n$/m
 
 # app is removed/deleted so remove it here as well
 unless File.exists?(ps_file)
 
-  config.gsub!(/^\tuse_backend b_#{app}.*\}$/,"")
-        .gsub!(/^backend b_#{app}.*\#b_#{app}\n$/mi,"")
+  config.gsub!(frontend_regex,"")
+  config.gsub!(backend_regex,"")
 
 # updating
 else
@@ -34,16 +33,10 @@ else
 
     next if process != "web"
 
-    puts "--> PS EACH #{process} #{scale}"
-
-    if scale.is_a?(Fixnum)
-      (1..scale).each {|i|
-        puts "--> SCALE FIXNUM #{i}"
-        backend << "\tserver s_#{app}_#{process}_#{i} #{addr}:#{port}\n"
-      }
+    if scale == 1
+      backend << "\tserver s_#{app}_#{process}_1 #{addr}:#{port}\n"
     elsif scale.is_a(Array)
       scale.each { |i|
-        puts "--> SCALE ARRAY #{i}"
         backend << "\tserver s_#{app}_#{process}_#{i[:id]} #{i[:addr]}:#{i[:port]}\n"
       }
     end
@@ -52,14 +45,13 @@ else
   backend << "#backend b_#{app}\n"
 
   if config.include? "use_backend b_#{app}"
-    config.gsub!(/^\tuse_backend b_#{app}.*\}$/,acl)
+    config.gsub!(frontend_regex,acl)
   else
     config.gsub!(/^\#ACL_END$/,"#{acl}\n#ACL_END")
   end
 
   if config.include? "backend b_#{app}\n"
-    # config.gsub!(/^backend b_#{app}.*\#b_#{app}\n$/mi,backend)
-    config.gsub!(/^backend b_#{app}.*\#backend b_#{app}\n$/mi,backend)
+    config.gsub!(backend_regex,backend)
   else
     config.gsub!(/^\#BCK_END$/,"#{backend}\n#BCK_END")
   end
@@ -69,7 +61,6 @@ end
 File.open("/etc/haproxy/haproxy.cfg", "w") { |f|
   f.write config
 }
-puts "--> CONFIG \n #{config}"
 
 puts "--> Haproxy Config changed"
 puts `cat /etc/haproxy/haproxy.cfg`
