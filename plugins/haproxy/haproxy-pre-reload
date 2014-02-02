@@ -6,7 +6,7 @@ dokku_root = (`echo $DOKKU_ROOT`).gsub(/\n/,"")
 app, port, addr, vhost, subdomain, hostname, acl = ARGV
 config = `cat /etc/haproxy/haproxy.cfg`
 ps_file = "#{dokku_root}/#{app}/PS"
-frontend_regex = /\n^.*use_backend b_#{app}.*\}$/
+frontend_regex = /^.*use_backend b_#{app}.*\}$/
 backend_regex = /^backend b_#{app}\n.*\#backend b_#{app}\n$/m
 
 # app is removed/deleted so remove it here as well
