@@ -83,7 +83,7 @@ case "$1" in
     ;;
 
   plugins)
-    ls -1 -d $PLUGIN_PATH/*/
+    ls -1 -d $PLUGIN_PATH/**/*
     ;;
 
   plugins-install)
