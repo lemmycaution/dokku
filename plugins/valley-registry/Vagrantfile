@@ -1,0 +1,72 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+$script = <<SCRIPT
+set -x
+set -e
+
+if [ "`tail -1 /root/.profile`" = "mesg n" ]; then
+  echo 'Patching basebox to prevent future `stdin: is not a tty` errors...'
+  sed -i '$d' /root/.profile
+  cat << 'EOH' >> /root/.profile
+  if `tty -s`; then
+    mesg n
+  fi
+EOH
+fi
+
+apt-get -y install wget
+wget https://gist.githubusercontent.com/green-valley/9185191/raw/60a97f9263756eeaa78e461ebe8eb327f6e1b1cb/docker-install.sh
+chmod +x docker-install.sh
+sudo ./docker-install.sh vagrant
+
+# run this manually after provision, sorry i'm lazy to write proper script for vagrant
+# sudo docker run -d -p 5000:5000 registry
+
+SCRIPT
+
+$vbox_script = <<VBOX_SCRIPT + $script
+# Install the VirtualBox guest additions if they aren't already installed.
+if [ ! -d /opt/VBoxGuestAdditions-4.3.6/ ]; then
+    # Update remote package metadata.  'apt-get update' is idempotent.
+    apt-get update -q
+
+    # Kernel Headers and dkms are required to build the vbox guest kernel
+    # modules.
+    apt-get install -q -y linux-headers-generic-lts-raring dkms
+
+    echo 'Downloading VBox Guest Additions...'
+    wget -cq http://dlc.sun.com.edgesuite.net/virtualbox/4.3.6/VBoxGuestAdditions_4.3.6.iso
+    echo "95648fcdb5d028e64145a2fe2f2f28c946d219da366389295a61fed296ca79f0  VBoxGuestAdditions_4.3.6.iso" | sha256sum --check || exit 1
+
+    mount -o loop,ro /home/vagrant/VBoxGuestAdditions_4.3.6.iso /mnt
+    /mnt/VBoxLinuxAdditions.run --nox11
+    umount /mnt
+fi
+VBOX_SCRIPT
+
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = "ubuntu"
+  
+  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  
+  # docker-registry port
+  config.vm.network :forwarded_port, guest: 5000, host: 5000, auto_correct: true    
+
+  config.vm.network :private_network, ip: "10.0.0.20"
+
+  config.vm.hostname = "registry.valley.local"   
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--ostype", "Ubuntu_64"]
+    vb.customize ["modifyvm", :id, "--memory", "1024"]    
+  end
+  
+  config.vm.provision :shell, :inline => $vbox_script, keep_color: true
+  
+end

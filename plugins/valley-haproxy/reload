@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+# TODO: re-generate config
+
+sudo service haproxy reload > /dev/null

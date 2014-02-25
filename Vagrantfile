@@ -3,8 +3,8 @@
 
 BOX_NAME = ENV["BOX_NAME"] || "raring"
 BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/raring/current/raring-server-cloudimg-amd64-vagrant-disk1.box"
-DOKKU_DOMAIN = ENV["DOKKU_DOMAIN"] || "dokku.me"
-DOKKU_IP = ENV["DOKKU_IP"] || "10.0.0.2"
+DOKKU_DOMAIN = ENV["DOKKU_DOMAIN"] || "valley.local"
+DOKKU_IP = ENV["DOKKU_IP"] || "10.0.0.10"
 PREBUILT_STACK_URL = File.exist?("#{File.dirname(__FILE__)}/stack.tgz") ? 'file:///root/dokku/stack.tgz' : nil
 
 make_cmd = "make install"
@@ -16,6 +16,7 @@ Vagrant::configure("2") do |config|
   config.vm.box = BOX_NAME
   config.vm.box_url = BOX_URI
   config.vm.synced_folder File.dirname(__FILE__), "/root/dokku"
+  config.vm.synced_folder "~/.ssh/gq_credentials", "/home/vagrant/.ssh/gq_credentials"  
   config.vm.network :forwarded_port, guest: 80, host: 8080
   config.vm.hostname = "#{DOKKU_DOMAIN}"
   config.vm.network :private_network, ip: DOKKU_IP
@@ -27,5 +28,5 @@ Vagrant::configure("2") do |config|
     vb.customize ["modifyvm", :id, "--ostype", "Ubuntu_64"]
   end
 
-  config.vm.provision :shell, :inline => "apt-get -y install git && cd /root/dokku && #{make_cmd}"
+  config.vm.provision :shell, :inline => "mkdir -p /home/dokku/dokkurc && printf 'export REGISTRY=10.0.0.20:5000\nexport DOKKU_TRACE=1' > /home/dokku/dokkurc && apt-get -y install git && cd /root/dokku && #{make_cmd}"
 end

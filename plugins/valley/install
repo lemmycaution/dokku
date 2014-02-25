@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+# in vagrant you may need 
+# cp -r /root/dokku/plugins/* /var/lib/dokku/plugins
+
+# Install ruby 1.9.3
+echo "[valley/install]: installing ruby 1.9.3"
+sudo apt-add-repository -y ppa:brightbox/ruby-ng
+sudo apt-get update -q -y
+sudo apt-get install -q -y libcurl4-openssl-dev libmcrypt-dev ruby1.9.3 rubygems
+
+# Uninstall Ruby 1.8
+# gem1.8 list | cut -d" " -f1 | xargs sudo gem1.8 uninstall -aIx
+sudo apt-get -y -q purge libruby1.8 ruby1.8 ruby1.8-dev rubygems1.8 
+
+# choose your interpreter
+# changes symlinks for /usr/bin/ruby , /usr/bin/gem
+# /usr/bin/irb, /usr/bin/ri and man (1) ruby
+sudo update-alternatives --auto ruby
+sudo update-alternatives --auto gem
+
+sudo gem install 'euca', '~> 0.0.9'
+sudo gem install 'commander'
+sudo gem install 'terminal-table'
