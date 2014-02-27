@@ -23,3 +23,7 @@ sudo update-alternatives --auto gem
 sudo gem install bundler
 sudo gem install rake
 sudo gem install /var/lib/dokku/plugins/valley/pkg/valley-0.0.1.gem
+
+if [[ ! -d "$DOKKU_ROOT/.ssh" ]]; then
+sudo -i -u dokku mkdir -p /home/dokku/.ssh
+fi
