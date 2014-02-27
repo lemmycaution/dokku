@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+`set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x`
+
+require 'valley'
+
+config = File.read("#{ENV['PLUGIN_PATH']}/valley/haproxy/haproxy.cfg")  
+
+acl = ""  
+backend = ""  
+App.all.each do |app|
+
+  app.domains.each do |domain|
+    acl << "    use_backend b_#{app.name} if { hdr(host) -i #{domain} }"
+  end
+
+  backend << "backend b_#{app.id}\n"      
+  app.containers.select{|container| container.command =~ /web/}.each do |container|
+    sname = "s_#{container.names}".parameterize.underscore
+    backend << "    server #{sname} #{container.host.private_ip}:#{container.port}\n"
+  end
+  backend << "#backend b_#{app.name}\n"
+
+end
+
+config.gsub!(/^\#ACL_END$/,"#{acl}\n#ACL_END")
+config.gsub!(/^\#BCK_END$/,"#{backend}\n#BCK_END")
+
+File.open("/etc/haproxy/haproxy.cfg", "w") { |f|
+  f.write config
+}
+
+puts "--> Haproxy Config changed"
+
+sh('sudo service haproxy reload > /dev/null')

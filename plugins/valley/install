@@ -20,6 +20,6 @@ sudo apt-get -y -q purge libruby1.8 ruby1.8 ruby1.8-dev rubygems1.8
 sudo update-alternatives --auto ruby
 sudo update-alternatives --auto gem
 
-sudo gem install 'euca', '~> 0.0.9'
-sudo gem install 'commander'
-sudo gem install 'terminal-table'
+sudo gem install bundler
+sudo gem install rake
+sudo gem install /var/lib/dokku/plugins/valley/pkg/valley-0.0.1.gem

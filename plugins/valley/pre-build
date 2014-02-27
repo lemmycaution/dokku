@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+APP=$1
+
+if [[ ! -f "$DOKKU_ROOT/$APP/DOMAINS" ]]; then
+	DOMAIN=$(< "$DOKKU_ROOT/VHOST")
+	printf '---
+	- $APP.$DOMAIN
+	' > "$DOKKU_ROOT/$APP/DOMAINS"
+fi
+
+if [[ ! -f "$DOKKU_ROOT/$APP/PS" ]]; then
+	printf '---
+	web: 1
+	' > "$DOKKU_ROOT/$APP/PS"
+fi

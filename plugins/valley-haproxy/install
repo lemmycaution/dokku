@@ -37,6 +37,6 @@ fi
 
 # sudo service haproxy restart
 
-if [[ ! -f  "$DOKKU_ROOT/VHOST" ]]; then
+if [[ ! -f "$DOKKU_ROOT/VHOST" ]]; then
   [[ $(dig +short $(< "$DOKKU_ROOT/HOSTNAME")) ]] && cp "$DOKKU_ROOT/HOSTNAME" "$DOKKU_ROOT/VHOST"
 fi

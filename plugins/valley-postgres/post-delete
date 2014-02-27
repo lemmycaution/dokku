@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
-set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+#!/usr/bin/env ruby
+`set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x`
 
-APP=$1
+require 'valley'
 
-# TODO: delete DB(s) if exists
+Postgres.instance.run("valley-postgres delete #{ARGV[0]}")

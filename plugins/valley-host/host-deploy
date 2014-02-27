@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+`set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x`
+
+require 'valley'
+
+app_name,repo = ARGV
+
+app = App.find(app_name)
+
+app.deploy(repo)
+
+pluginhook haproxy-reload $APP

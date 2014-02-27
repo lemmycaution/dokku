@@ -17,6 +17,7 @@ Vagrant::configure("2") do |config|
   config.vm.box_url = BOX_URI
   config.vm.synced_folder File.dirname(__FILE__), "/root/dokku"
   config.vm.synced_folder "~/.ssh/gq_credentials", "/home/vagrant/.ssh/gq_credentials"  
+  config.vm.synced_folder "../valley", "/valley"    
   config.vm.network :forwarded_port, guest: 80, host: 8080
   config.vm.hostname = "#{DOKKU_DOMAIN}"
   config.vm.network :private_network, ip: DOKKU_IP
@@ -28,5 +29,5 @@ Vagrant::configure("2") do |config|
     vb.customize ["modifyvm", :id, "--ostype", "Ubuntu_64"]
   end
 
-  config.vm.provision :shell, :inline => "mkdir -p /home/dokku/dokkurc && printf 'export REGISTRY=10.0.0.20:5000\nexport DOKKU_TRACE=1' > /home/dokku/dokkurc && apt-get -y install git && cd /root/dokku && #{make_cmd}"
+  config.vm.provision :shell, :inline => "mkdir -p /home/dokku && printf 'export REGISTRY=10.0.0.20:5000\nexport DOKKU_TRACE=1' > /home/dokku/dokkurc && apt-get -y install git && cd /root/dokku && #{make_cmd}"
 end

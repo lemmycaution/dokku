@@ -1,29 +1,49 @@
 #!/usr/bin/env ruby
 
-require 'yaml'
+`set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x`
 
-app_name=ARGV[0]
+require 'yaml'
+require 'valley'
+
+name=ARGV[0]
 
 types = YAML.load(`docker run app/#{app} cat /app/Procfile`).keys()
 
-ps_file = "#{ENV['DOKKU_ROOT']}/#{app}/PS"
-unless File.exists? ps_file
-  File.open(ps_file,"w"){|f| f.write "web: 1" }
+app = App.find(name)
+
+# ps_file = "#{ENV['DOKKU_ROOT']}/#{app}/PS"
+# unless File.exists? ps_file
+#   File.open(ps_file,"w"){|f| f.write "web: 1" }
+# end
+# ps = YAML.load_file(ps_file)
+
+if app.processes.empty?
+  app.processes['web'] = 1
 end
-ps = YAML.load_file(ps_file)
 
 # add Procfile process types
+# types.each do |type|
+#   unless ps.keys.include? type
+#     ps[type] = 0
+#   end
+# end
 types.each do |type|
-  unless ps.keys.include? type
-    ps[type] = 0
+  unless app.processes.keys.include? type
+    app.processes[type] = 1
   end
 end
 
 # remove the rest if exists
-ps.keys.each do |type|
+# ps.keys.each do |type|
+#   unless types.include? type
+#     ps.delete(type)
+#   end
+# end
+app.processes.keys.each do |type|
   unless types.include? type
-    ps.delete(type)
+    app.processes.delete(type)
   end
 end
 
-File.open(ps_file, "w"){ |f| f.write ps.to_yaml }
+# File.open(ps_file, "w"){ |f| f.write ps.to_yaml }
+app.save

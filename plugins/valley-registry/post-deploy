@@ -2,14 +2,7 @@
 
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 
-get_registry_uri() {
-	uri="$(euca-describe-instances --filter tag-key=type --filter tag-value=registry | grep INSTANCE | awk '{ print $4 }')"
-	if [[ ! -z "$uri" ]]; then
-		return "$uri:5000"
-	fi
-}
-
-APP="$1"; PORT="$2"; REGISTRY=${REGISTRY:=$(get_registry_uri)}
+APP="$1"; PORT="$2"; REGISTRY=${REGISTRY:=$(valley registry:uri)}
 
 if [ $REGISTRY ]; then
 
@@ -20,7 +13,7 @@ if [ $REGISTRY ]; then
 	docker tag $cid $REPO
 	docker push $REPO
 	
-	pluginhook deploy $APP $REPO
+	pluginhook host-deploy $APP $REPO
 
 	docker stop $CONTAINER > /dev/null || true
 

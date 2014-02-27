@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+case "$1" in
+  valley:domain)
+
+    if [[ -z $2 ]];then
+      echo "$2" > "$DOKKU_ROOT/VHOST"
+    else
+      if [[ ! -f "$DOKKU_ROOT/VHOST" ]]; then
+        [[ $(dig +short $(< "$DOKKU_ROOT/HOSTNAME")) ]] && cp "$DOKKU_ROOT/HOSTNAME" "$DOKKU_ROOT/VHOST"
+      fi
+    fi
+    
+    cat "$DOKKU_ROOT/VHOST"
+  ;;
+  
+  valley:apps)
+    name="**"
+    [[ ! -z "$2" ]] && name=$2
+    ls -1 -d "$DOKKU_ROOT/$name"
+  ;;
+  
+  valley:domains)
+    APP=$2
+    if [[ -z "$3" ]]; then
+	  printf $s\n "$3" > "$DOKKU_ROOT/$APP/DOMAINS" 	
+    else
+      cat "$DOKKU_ROOT/$APP/DOMAINS"
+    fi
+  ;;
+  
+  valley:processes)
+    APP=$2
+    if [[ -z "$3" ]]; then
+	  printf $s\n "$3" > "$DOKKU_ROOT/$APP/PS" 	
+    else
+      cat "$DOKKU_ROOT/$APP/PS"
+    fi
+  ;;
+  
+esac
