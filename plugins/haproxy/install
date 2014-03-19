@@ -7,22 +7,9 @@ update-alternatives --set ruby /usr/bin/ruby1.9.1
 update-alternatives --set gem /usr/bin/gem1.9.1
 gem install bundler
 
-[[ ! -d "$HOME/haproxy" ]] && git clone http://master.formilux.org/git/people/willy/haproxy.git "$HOME/haproxy"
-cd "$HOME/haproxy"
-make TARGET=linux2628 CPU=native USE_PCRE=1 USE_OPENSSL=1 USE_ZLIB=1 USE_STATIC_PCRE=1
-sudo make install
-[[ ! -f "/usr/sbin/haproxy" ]] && sudo ln -s /usr/local/sbin/haproxy /usr/sbin/haproxy
-[[ ! -d "/usr/share/haproxy" ]] && sudo mkdir /usr/share/haproxy
-[[ ! -f "/etc/init.d/haproxy" ]] && sudo cp $PLUGIN_PATH/haproxy/init.d.haproxy.txt /etc/init.d/haproxy
-sudo chmod +x /etc/init.d/haproxy
-sudo update-rc.d haproxy defaults
-sudo echo "ENABLED=1" > /etc/default/haproxy
-sudo adduser --system haproxy
-[[ ! -d "/etc/haproxy" ]] && sudo mkdir /etc/haproxy
-[[ ! -d "/etc/haproxy/errors" ]] && sudo mkdir /etc/haproxy/errors
-sudo cp $HOME/haproxy/examples/errorfiles/* /etc/haproxy/errors
-sudo cp $PLUGIN_PATH/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg
-sudo chmod 777 /etc/haproxy/haproxy.cfg
+sudo add-apt-repository ppa:vbernat/haproxy-1.5
+sudo apt-get update -y
+sudo apt-get install haproxy -y
 
 if ! grep -q dokku-haproxy-reload "/etc/sudoers"; then
   touch /etc/sudoers.tmp
@@ -32,12 +19,9 @@ if ! grep -q dokku-haproxy-reload "/etc/sudoers"; then
   rm /tmp/sudoers.new
 fi
 
-# to update
-# cd ~/haproxy
-# git pull
-# make clean
-# make TARGET=linux2628 CPU=native USE_PCRE=1 USE_OPENSSL=1 USE_ZLIB=1
-# sudo make install
+sudo cp $PLUGIN_PATH/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg
+sudo chmod 777 /etc/haproxy/haproxy.cfg
+sudo echo "ENABLED=1" > /etc/default/haproxy
 
 # sudo service haproxy restart
 
